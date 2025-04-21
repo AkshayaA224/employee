@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Signup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: whitesmoke;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .form-container {
+      background-color: white;
+      padding: 30px;
+      border: 2px solid rgb(94, 141, 24);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(40, 38, 38, 0.1);
+      width: 80%;
+      max-width: 500px;
+    }
+    
+    h2 {
+      font-size: 28px;
+      color: black;
+      font-family: 'Times New Roman', Times, serif;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    label {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 18px;
+      color: darkblue;
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    input, select {
+      font-size: 16px;
+      font-family: 'Times New Roman', Times, serif;
+      color: black;
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    .radio-group {
+      margin-bottom: 15px;
+    }
+    
+    .radio-group label {
+      display: inline;
+      margin-right: 15px;
+      font-size: 16px;
+    }
+    
+    .radio-group input {
+      width: auto;
+      margin-right: 5px;
+    }
+    
+    button {
+      background-color: yellowgreen;
+      border-radius: 12px;
+      padding: 12px 28px;
+      border: 2px solid white;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      background-color: darkgreen;
+    }
+    
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
+    }
+    
+    .success-message {
+      color: green;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Employee Signup</h2>
+    <form id="signupForm">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="age">Age:</label>
+      <input type="number" id="age" name="age" required min="18" max="65">
+
+      <div class="radio-group">
+        <label>Gender:</label>
+        <input type="radio" id="male" name="gender" value="Male" required>
+        <label for="male">Male</label>
+        
+        <input type="radio" id="female" name="gender" value="Female">
+        <label for="female">Female</label>
+        
+        <input type="radio" id="other" name="gender" value="Other">
+        <label for="other">Other</label>
+      </div>
+
+      <label for="dob">Date of Birth:</label>
+      <input type="date" id="dob" name="dob" required>
+
+      <label for="blood">Blood Group:</label>
+      <select id="blood" name="blood" required>
+        <option value="">Select</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+      </select>
+
+      <label for="position">Position:</label>
+      <input type="text" id="position" name="position" required>
+
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}">
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="aadhaar">Aadhaar Number:</label>
+      <input type="text" id="aadhaar" name="aadhaar" required pattern="[0-9]{12}">
+
+      <label for="userid">User ID:</label>
+      <input type="text" id="userid" name="userid" required>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required minlength="6">
+
+      <button type="submit">Signup</button>
+      <div id="errorMessage" class="error-message"></div>
+      <div id="successMessage" class="success-message"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      
+      const formData = {
+        name: document.getElementById("name").value,
+        age: document.getElementById("age").value,
+        gender: document.querySelector('input[name="gender"]:checked').value,
+        dob: document.getElementById("dob").value,
+        blood: document.getElementById("blood").value,
+        position: document.getElementById("position").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        aadhaar: document.getElementById("aadhaar").value,
+        userid: document.getElementById("userid").value,
+        password: document.getElementById("password").value
+      };
+      
+      const errorElement = document.getElementById("errorMessage");
+      const successElement = document.getElementById("successMessage");
+      
+      try {
+        const response = await fetch("/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          successElement.textContent = "Account created successfully! Redirecting to login...";
+          errorElement.textContent = "";
+          
+          // Redirect to login after 2 seconds
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 2000);
+        } else {
+          errorElement.textContent = data.error || "Signup failed. Please try again.";
+          successElement.textContent = "";
+        }
+      } catch (error) {
+        console.error("Signup error:", error);
+        errorElement.textContent = "An error occurred during signup. Please try again.";
+        successElement.textContent = "";
+      }
+    });
+  </script>
+</body>
+</html>

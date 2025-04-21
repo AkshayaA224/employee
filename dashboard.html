@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    h3 {
+      color: #34495e;
+      margin-top: 25px;
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    li {
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #3498db;
+    }
+    
+    strong {
+      color: #2c3e50;
+      margin-right: 10px;
+    }
+    
+    .logout-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    .login-history {
+      margin-top: 30px;
+    }
+    
+    .login-history table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    
+    .login-history th, .login-history td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    .login-history th {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .login-history tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome, <span id="emp-name"></span>!</h2>
+    <h3>Your Details</h3>
+    <ul>
+      <li><strong>Age:</strong> <span id="emp-age"></span></li>
+      <li><strong>Gender:</strong> <span id="emp-gender"></span></li>
+      <li><strong>Blood Group:</strong> <span id="emp-blood"></span></li>
+      <li><strong>Position:</strong> <span id="emp-position"></span></li>
+      <li><strong>Phone:</strong> <span id="emp-phone"></span></li>
+      <li><strong>Email:</strong> <span id="emp-email"></span></li>
+      <li><strong>Aadhaar Number:</strong> <span id="emp-aadhaar"></span></li>
+    </ul>
+    
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    
+    <div class="login-history">
+      <h3>Recent Login History</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody id="login-history-body">
+          <!-- Login history will be populated here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Check if employee data exists in sessionStorage
+    const employee = JSON.parse(sessionStorage.getItem("employee"));
+    
+    if (!employee) {
+      // If no employee data, redirect to login
+      alert("Please login to access the dashboard");
+      window.location.href = "/login.html";
+    } else {
+      // Populate employee data
+      document.getElementById("emp-name").textContent = employee.name;
+      document.getElementById("emp-age").textContent = employee.age;
+      document.getElementById("emp-gender").textContent = employee.gender;
+      document.getElementById("emp-blood").textContent = employee.blood;
+      document.getElementById("emp-position").textContent = employee.position;
+      document.getElementById("emp-phone").textContent = employee.phone;
+      document.getElementById("emp-email").textContent = employee.email;
+      document.getElementById("emp-aadhaar").textContent = employee.aadhaar;
+      
+      // Fetch login history
+      fetchLoginHistory();
+    }
+    
+    function logout() {
+      // Clear session data
+      sessionStorage.removeItem("employee");
+      
+      // Send logout request to server
+      fetch("/logout", { method: "POST" })
+        .then(() => {
+          window.location.href = "/login.html";
+        })
+        .catch(err => {
+          console.error("Logout error:", err);
+          window.location.href = "/login.html";
+        });
+    }
+    
+    async function fetchLoginHistory() {
+      try {
+        const response = await fetch("/api/logs");
+        if (response.ok) {
+          const logs = await response.json();
+          const historyBody = document.getElementById("login-history-body");
+          
+          logs.forEach(log => {
+            const row = document.createElement("tr");
+            
+            const dateCell = document.createElement("td");
+            dateCell.textContent = new Date(log.timestamp).toLocaleString();
+            
+            const ipCell = document.createElement("td");
+            ipCell.textContent = log.ip;
+            
+            row.appendChild(dateCell);
+            row.appendChild(ipCell);
+            historyBody.appendChild(row);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching login history:", error);
+      }
+    }
+  </script>
+</body>
+</html>
